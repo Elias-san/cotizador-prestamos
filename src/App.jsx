@@ -1,8 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './components/Header'
+import Button from './components/Button'
+import { formatearDinero, calcularTotalPagar } from './components/helpers'
+
 function App() {
  
   const [ cantidad,setCantidad ] = useState(10000)
+  const [ mes, setMes ] = useState(6)
+  const [ total, setTotal ] = useState(0)
+  const [ pago, setPago ] = useState(0)
+
+  useEffect( ()=> {
+    const resultadoTotalPagar = calcularTotalPagar(cantidad,mes)
+    setTotal(resultadoTotalPagar)
+    
+  },[cantidad,mes])
+
+  useEffect( ()=> {
+     //calcular pago
+     setPago(total / mes)
+
+  },[total])
 
   const MIN=0
   const MAX=20000
@@ -11,11 +29,46 @@ function App() {
   function handleChange(e){
     setCantidad(+e.target.value)
   }
+
+  function handleDecremento(){
+    const valor = cantidad - STEP
+
+    if (valor < MIN ) alert ("Valor no valido")
+  else 
+    setCantidad(valor)
+}
+
+  function handleIncremento(){
+    const valor = cantidad + STEP
+
+    if (valor > MAX ) alert ("Valor no valido")
+    else 
+      setCantidad(valor)
+  }
+
+  function handleMeses(e){
+    const mes = parseInt(+e.target.value)
+    setMes(mes)
+  }
   return (
     <>
       
       <div className="my-20 max-w-lg mx-auto bg-white shadow p-10">
         <Header/>
+
+        <div className="flex justify-between my-6">
+          
+            <Button
+              signo="-"
+              fn = {handleDecremento}
+            />
+
+            <Button
+              signo="+"
+              fn = {handleIncremento}
+            />
+           
+        </div>
         <input 
           type="range"
           min={MIN}
@@ -25,8 +78,37 @@ function App() {
           onChange={handleChange}
           value={cantidad}
           />
-          <p className="text-center my-10 text-5xl font-extrabold text-indigo-600">{cantidad}</p>
+          <p className="text-center my-10 text-5xl font-extrabold text-indigo-600">
+            {formatearDinero(cantidad)}</p>
+
+            <h2 className='text-2xl font-extrabold text-gray-500 text-center'>
+              Elige un <span className='text-indigo-600'>Plazo</span> a pagar
+            </h2>
+            <select className='mt-5 w-full p-2 bg-white border border-gray-300 
+            rounded-lg text-center text-xl font-bold text-gray-500'
+            value = { mes }
+            onChange={ handleMeses }
+            > 
+              <option value={6}>6 Meses</option>
+              <option value={12}>12 Meses</option>
+              <option value={24}>24 Meses</option>
+             </select>
+
+             <div className="my-5 space-y-3 bg-gray-50 p-5 ">
+                <h2 className='text-2xl font-extrabold text-gray-500 text-center'>
+                 Resumen <span className='text-indigo-600'>de pago</span> 
+                </h2>
+                <p className="text-xl text-gray-500 text-center font-bold">
+                  { mes } Meses</p>
+                <p className="text-xl text-gray-500 text-center font-bold">
+                    { formatearDinero(total) } Total a pagar
+                </p>
+                <p className="text-xl text-gray-500 text-center font-bold">
+                  { formatearDinero(pago) } Mensuales
+                </p>
+             </div>
       </div>
+     
     </>
   )
 }
